@@ -6,7 +6,8 @@ Every clinical LGE examination already comes with a written report. This reposit
 report–image pretraining (CLIP-style): each examination is matched to its own report, so no manual labels are needed. The frozen
 image features are then evaluated for:
 
-- **all-cause mortality beyond clinical variables and LVEF** (risk tertiles, adjusted odds ratios, paired comparisons);
+- **all-cause mortality beyond clinical variables and LVEF** (risk tertiles, adjusted odds ratios, paired comparisons), including
+  **hidden risk**: patients who look low-risk on age, risk factors and LVEF but have a high image score (clinical × image risk grid);
 - **external, multicenter transfer** against a trial core laboratory (infarct size, LVEF, volumes, LV mass), with whole trial
   sites held out, and on the public EMIDEC dataset;
 - **report retrieval and text-to-image search** (the training task);
@@ -18,6 +19,10 @@ foundation model (DINOv2), image-only contrastive pretraining on the same data, 
 
 > No patient data, model weights or results are included. The code runs on your own data laid out as in
 > [`docs/DATA_FORMAT.md`](docs/DATA_FORMAT.md); a synthetic smoke test checks the pipeline end to end.
+
+## Repository
+
+`every-report-is-a-label` — code for the paper of the same title.
 
 ## Installation
 
