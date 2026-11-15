@@ -1,6 +1,6 @@
-# From Reports to Risk
+# Every Radiology Report Is a Label
 
-**A label-free foundation model for late gadolinium enhancement (LGE) cardiovascular magnetic resonance, trained on routine clinical reports.**
+**A foundation model for late gadolinium enhancement (LGE) CMR that predicts mortality beyond ejection fraction, trained on routine radiology reports without manual labels.**
 
 Every clinical LGE examination already comes with a written report. This repository trains an LGE image encoder by contrastive
 report–image pretraining (CLIP-style): each examination is matched to its own report, so no manual labels are needed. The frozen
@@ -105,5 +105,5 @@ docs/      expected input formats
 
 ## Citation
 
-If you use this code, please cite the accompanying paper (in preparation): *From Reports to Risk: a label-free foundation model
-for late gadolinium enhancement cardiovascular magnetic resonance.*
+If you use this code, please cite the accompanying paper (in preparation): *Every Radiology Report Is a Label: a foundation model
+for late gadolinium enhancement CMR that predicts mortality beyond ejection fraction.*
