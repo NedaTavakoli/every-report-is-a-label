@@ -29,12 +29,23 @@ foundation model (DINOv2), image-only contrastive pretraining on the same data, 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-# vision backbone code of Shad et al. (multiscale video transformer), used as the image encoder
-git clone https://github.com/rohanshad/cmr_transformer external/cmr_transformer
-# cine CMR checkpoint cmr_c0.1 (CC BY-NC 4.0) from Hugging Face: rohanshad/cmr_c0.1 -> weights/
+# pretrained weights and code: accept the terms at https://huggingface.co/rohanshad/cmr_c0.1 (CC BY-NC 4.0) first
+huggingface-cli login                       # token with read access to gated repositories
+python scripts/download_checkpoints.py      # add --dinov2 for the comparison experiments
 ```
 
-The checkpoint is a PyTorch Lightning pickle: set `model.allow_pickle_checkpoint: true` in the config only if you accept its source.
+`scripts/download_checkpoints.py` downloads:
+
+| Item | Source | Saved to |
+|---|---|---|
+| Cine CMR checkpoint `cmr_c0.1` (Shad et al.), starting point of the image encoder | Hugging Face `rohanshad/cmr_c0.1`, file `epoch=599-step=124200.ckpt` (gated) | `weights/` |
+| Video transformer code (Shad et al.) | `github.com/rohanshad/cmr_transformer`, branch `publicrelease` | `external/cmr_transformer` |
+| Text encoder | Hugging Face `thomas-sounack/BioClinical-ModernBERT-base` | Hugging Face cache |
+| DINOv2 ViT-B/14 (comparisons only, `--dinov2`) | Hugging Face `facebook/dinov2-base` | Hugging Face cache |
+
+Use `--only cine|code|text|dinov2` to fetch one item. The cine checkpoint loads in PyTorch safe mode (tensors only),
+so `model.allow_pickle_checkpoint` can stay `false`. The weights of the report-pretrained model in the paper are not
+included in this repository.
 
 ## Quick check (synthetic data, no GPU needed)
 
@@ -108,6 +119,7 @@ zsh docs/build/make_all_figures.sh --images   # also extract the example patient
 ```
 configs/      training configurations (main model; DINOv2 backbone)
 src/          data preparation, training, evaluation and external-validation scripts
+scripts/      download_checkpoints.py (pretrained weights and code)
 tests/        synthetic smoke test; checkpoint loading test
 docs/         expected input formats (DATA_FORMAT.md)
 docs/build/   figure generation (PowerPoint figures, renders, TIFF export, example-image extraction)

@@ -23,7 +23,7 @@ model:
   dinov2_name: facebook/dinov2-base
   dinov2_freeze: 6
   vision_checkpoint: null   # Shad et al. cmr_c0.1; null = random initialization
-  allow_pickle_checkpoint: false   # the checkpoint is a Lightning pickle: set true only after you accept its source
+  allow_pickle_checkpoint: false   # cmr_c0.1 loads in safe mode (tensors only); set true only for a pickle you trust
   text_model: thomas-sounack/BioClinical-ModernBERT-base
   text_init: null            # optional domain-adapted checkpoint from the report-only SSL (Results/dapt/.../final)
   freeze_text_layers: 6
