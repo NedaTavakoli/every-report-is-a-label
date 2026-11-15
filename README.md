@@ -1,6 +1,6 @@
 # Every Radiology Report Is a Label
 
-**A foundation model for late gadolinium enhancement (LGE) CMR that predicts mortality beyond ejection fraction, trained on routine radiology reports without manual labels.**
+**A multimodal image–report foundation model for late gadolinium enhancement (LGE) CMR that predicts mortality beyond ejection fraction. It learns from routine LGE images paired with the radiology reports written for them, without manual labels.**
 
 Every clinical LGE examination already comes with a written report. This repository trains an LGE image encoder by contrastive
 report–image pretraining (CLIP-style): each examination is matched to its own report, so no manual labels are needed. The frozen
@@ -105,5 +105,5 @@ docs/      expected input formats
 
 ## Citation
 
-If you use this code, please cite the accompanying paper (in preparation): *Every Radiology Report Is a Label: a foundation model
-for late gadolinium enhancement CMR that predicts mortality beyond ejection fraction.*
+If you use this code, please cite the accompanying paper (in preparation): *Every Radiology Report Is a Label: a multimodal image–report
+foundation model for late gadolinium enhancement CMR that predicts mortality beyond ejection fraction.*
