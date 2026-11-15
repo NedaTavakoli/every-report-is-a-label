@@ -85,13 +85,26 @@ out of pretraining; the last checkpoint is always used (no model selection on he
 training-set-tuned regularization; external data are never used for tuning; encoders are compared on the same cases, folds and
 bootstrap samples.
 
+## Figures
+
+All paper figures are generated as editable PowerPoint files from the result files in `outputs/`, then rendered and exported
+as 600-dpi TIFFs (rendering uses Keynote and Quick Look on macOS):
+
+```bash
+zsh docs/build/make_all_figures.sh            # all figures from outputs/*.json
+zsh docs/build/make_all_figures.sh --images   # also extract the example patient images first (local data only)
+```
+
+`FIG_PLACEHOLDER=1` builds layout-check copies with gray boxes in place of patient images; `FIG_TEXT_SCALE` sets the text size.
+
 ## Repository layout
 
 ```
-configs/   training configurations (main model; DINOv2 backbone)
-src/       data preparation, training, evaluation and external-validation scripts
-tests/     synthetic smoke test; checkpoint loading test
-docs/      expected input formats
+configs/      training configurations (main model; DINOv2 backbone)
+src/          data preparation, training, evaluation and external-validation scripts
+tests/        synthetic smoke test; checkpoint loading test
+docs/         expected input formats (DATA_FORMAT.md)
+docs/build/   figure generation (PowerPoint figures, renders, TIFF export, example-image extraction)
 ```
 
 ## Data and licenses
