@@ -30,6 +30,7 @@ LAB = {"random": "Random", "cine": "Cine\n(Shad)", "dinov2": "DINOv2\n(generic)"
 LAB1 = {k: v.replace("-\n", "-").replace("\n", " ") for k, v in LAB.items()}
 
 RC, EM, ER, ERD, BD = J("lge_clip", "retrieval_ci.json"), J("lge_clip", "emidec_eval.json"), J("lge_clip", "eval_runs.json"), J("lge_clip_dinov2", "eval_runs.json"), J("lge_clip", "bench_dinov2.json")
+RGRID = None
 DF, DFD, ML, EMAP, RG, SAL, PT = (J("lge_clip", "determine_full_eval.json"), J("lge_clip_dinov2", "determine_full_eval.json"), J("lge_clip", "mortality_lvef.json"),
                                   J("lge_clip", "embed_map.json"), J("lge_clip", "risk_groups.json"), J("lge_clip", "saliency_determine.json"), J("lge_clip", "paired_tests.json"))
 
@@ -59,6 +60,9 @@ def metric(enc, m):
             return (v, None, None) if v is not None else None
     except (KeyError, TypeError):
         return None
+
+
+RGRID = J("lge_clip", "risk_grid.json")
 
 
 # ---------------------------------------------------------------- Figure 9: scorecard
@@ -162,7 +166,7 @@ def figure11():
 # ---------------------------------------------------------------- Figure 12: clinical risk groups
 def figure12():
     if not RG: return
-    p, s = deck(7.5, 3.3); T3 = ["low", "middle", "high"]; K3 = ("low", "mid", "high"); L3 = {"low": "Low", "mid": "Middle", "high": "High"}
+    p, s = deck(7.5, 6.35 if RGRID else 3.3); T3 = ["low", "middle", "high"]; K3 = ("low", "mid", "high"); L3 = {"low": "Low", "mid": "Middle", "high": "High"}
     pc_ = lambda u: f"{100 * u:.0f}%"
     groups = [("All examinations", RG["tertiles_all"], RG["n"], RG["deaths"], RG["auroc_image_score_all"])] + \
              [(f"LVEF {g.replace('<=', '≤ ').replace('>', '> ')}%", RG["by_lvef"][g]["tertiles"], RG["by_lvef"][g]["n"], RG["by_lvef"][g]["deaths"], RG["by_lvef"][g]["auroc_image_score"]) for g in ("<=35", "36-50", ">50")]
@@ -180,12 +184,31 @@ def figure12():
     foot(s, 0.1, 2.95, 7.3, 0.3, "Observed all-cause mortality at data extraction (95% Wilson CI) by tertile of the image risk score (out-of-fold probability from the frozen "
          "report-pretrained LGE features alone). B: within LVEF strata (LVEF from the report). No follow-up time: exposure differs by examination year.",
          size=5.8, italic=True, align=PP_ALIGN.LEFT, color="line")
+    if RGRID:   # C: clinical-risk third x image-risk third
+        y0, cw, ch, x0 = 3.45, 1.35, 0.72, 1.95
+        line(s, 0.05, 3.05, 7.45, 3.05, color="grid")
+        panel(s, 0.05, 3.12, "C"); text(s, 0.35, 3.13, 7, 0.26, "Hidden risk: all-cause mortality by clinical risk and image risk", size=9, bold=True, align=PP_ALIGN.LEFT)
+        text(s, x0, y0, 3 * cw, 0.22, "Image risk (LGE features)", size=7.5, bold=True, color="trained")
+        for j, it in enumerate(T3): text(s, x0 + j * cw, y0 + 0.24, cw, 0.2, L3[{"low": "low", "middle": "mid", "high": "high"}[it]], size=7.5, bold=True)
+        yc = text(s, 0.05, y0 + 0.5 + 1.5 * ch - 0.15, 1.2, 0.3, "Clinical risk\n(age, risk factors, LVEF)", size=7.5, bold=True, color="clinical"); 
+        hi_m = max(RGRID["grid"][ct][it]["mortality"][0] for ct in T3 for it in T3)
+        for i, ct in enumerate(T3):
+            text(s, x0 - 0.65, y0 + 0.5 + i * ch, 0.6, ch, L3[{"low": "low", "middle": "mid", "high": "high"}[ct]], size=7.5, bold=True, align=PP_ALIGN.RIGHT)
+            for j, it in enumerate(T3):
+                c_ = RGRID["grid"][ct][it]; m_ = c_["mortality"][0]; f = m_ / hi_m if hi_m else 0
+                b = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x0 + j * cw + 0.02), Inches(y0 + 0.5 + i * ch + 0.02), Inches(cw - 0.04), Inches(ch - 0.04))
+                b.fill.solid(); b.fill.fore_color.rgb = RGBColor(255, int(255 - 200 * f), int(255 - 210 * f)); b.line.fill.background(); b.shadow.inherit = False
+                text(s, x0 + j * cw, y0 + 0.5 + i * ch + 0.06, cw, 0.32, f"{100 * m_:.0f}%", size=11, bold=True, color="white" if f > 0.6 else "ink")
+                text(s, x0 + j * cw, y0 + 0.5 + i * ch + 0.38, cw, 0.25, f"{c_['deaths']}/{c_['n']}", size=6.5, color="white" if f > 0.6 else "line")
+        au = RGRID["image_auroc_within_clinical"]
+        text(s, x0 + 3 * cw + 0.12, y0 + 0.5, 1.3, 3 * ch, "Image-score AUROC\nwithin clinical risk:\n" + "\n".join(f"{L3[{'low': 'low', 'middle': 'mid', 'high': 'high'}[ct]]}: {au[ct]:.2f}" for ct in T3 if au.get(ct)),
+             size=7, color="line", align=PP_ALIGN.LEFT)
     p.save(os.path.join(OUT, "Figure_12_risk.pptx"))
 
 
 # ---------------------------------------------------------------- Figure 13: saliency
 def overlays():
-    """example panels (Mac): the LGE slice with the most expert scar, cropped to the heart (myocardium bounding box + margin),
+    """example panels local: the LGE slice with the most expert scar, cropped to the heart (myocardium bounding box + margin),
     upsampled smoothly to 900 px; saliency smoothed (Gaussian, sigma 2.5 px at input resolution) and shown with the inferno
     colormap, opacity rising with saliency; expert scar outline in green. Same crop and scaling for every encoder."""
     from scipy import ndimage

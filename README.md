@@ -64,6 +64,7 @@ python retrieval_ci.py                       # retrieval with patient-bootstrap 
 python probe_clinical.py                     # clinical-variable probes and vital-status models
 python mortality_lvef.py                     # all-cause mortality beyond clinical variables + LVEF, all encoders
 python risk_groups.py                        # risk tertiles, within LVEF strata, adjusted odds ratios
+python risk_grid.py                          # clinical-risk x image-risk grid (hidden risk)
 python robustness.py                         # retrieval by vendor / field / era; site-shortcut check
 python embed_map.py                          # vendor decodability, t-SNE maps
 python search_demo.py                        # text-to-image search
