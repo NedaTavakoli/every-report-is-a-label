@@ -1,0 +1,16 @@
+torch>=2.0
+torchvision>=0.15
+transformers>=4.48   # ModernBERT needs a recent version
+pandas
+openpyxl
+numpy
+scipy
+scikit-learn
+h5py
+pyyaml
+pydicom>=2.4
+pylibjpeg            # the delivered DICOMs are JPEG Lossless
+pylibjpeg-libjpeg
+fvcore               # used by external/cmr_transformer/arch/mvit.py
+huggingface_hub
+pylibjpeg-openjpeg   # some delivered DICOMs are JPEG 2000

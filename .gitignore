@@ -1,0 +1,22 @@
+# never commit data, weights, results or third-party code
+data/
+outputs/
+weights/
+external/
+*.xlsx
+*.xls
+*.csv
+*.h5
+*.npz
+*.npy
+*.pt
+*.pth
+*.ckpt
+*.dcm
+*.nii
+*.nii.gz
+*.docx
+*.log
+__pycache__/
+.venv/
+.DS_Store

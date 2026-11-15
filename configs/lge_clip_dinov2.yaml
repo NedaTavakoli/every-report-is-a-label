@@ -1,0 +1,63 @@
+# Same as lge_clip.yaml except the vision backbone: DINOv2 instead of the cine MViT.
+# CLIP-style report-image pretraining on LGE magnitude series. No NLP label is read anywhere in this project.
+paths:
+  workbook: data/exam_table.xlsx   # one row per exam: report text + identifiers (see docs/DATA_FORMAT.md)
+  lge_root: /path/to/LGE_magnitude_DICOM_root
+  manifest_dir: data/manifest
+  cache_dir: data/cache_h5
+  out_dir: outputs/lge_clip_dinov2
+
+data:
+  views: [sa, 2ch, 3ch, 4ch]
+  exclude_series_regex: "long\\s*ti"   # long-TI series are a different contrast (e.g. thrombus imaging)
+  frames: 16                # encoder input length; the slices of a stack fill the "frames"
+  shorter_side: 256         # stored in the cache
+  crop: 224
+  split: {train: 0.8, val: 0.1, test: 0.1, seed: 42}   # by patient; expert-labeled patients are always held out
+  sentences_per_step: 5     # as in Shad et al.
+  max_text_tokens: 512
+  num_workers: 8
+
+model:
+  vision_backend: dinov2     # DINOv2 ViT-B/14 per frame (models.DinoVideo); all else as lge_clip.yaml
+  dinov2_name: facebook/dinov2-base
+  dinov2_freeze: 6
+  vision_checkpoint: null   # Shad et al. cmr_c0.1; null = random initialization
+  allow_pickle_checkpoint: false   # the checkpoint is a Lightning pickle: set true only after you accept its source
+  text_model: thomas-sounack/BioClinical-ModernBERT-base
+  text_init: null            # optional domain-adapted checkpoint from the report-only SSL (Results/dapt/.../final)
+  freeze_text_layers: 6
+  proj_dim: 512
+  init_temperature: 0.07
+
+train:
+  batch_size: 32
+  epochs: 60                # DINOv2 backbone: ~5 s/batch, so 60 epochs (main run plateaued by ~20)
+  lr: 4.8e-5                # optimizer settings from Shad et al.
+  weight_decay: 1.0e-6
+  eps: 1.0e-8
+  lr_drop_epoch: 30
+  lr_drop_factor: 0.1
+  flood: 0.05
+  grad_clip: 1.0
+  val_every: 5
+  save_every: 10
+  seed: 42
+
+downstream:   # src/finetune.py; settings from Shad et al. where they give them
+  epochs: 24
+  batch_size: 8
+  transfer_micro_batch: 2   # gradient accumulation in transfer mode (memory)
+  max_series: 6
+  lr: 1.0e-4
+  lr_encoder_transfer: 1.0e-5
+  weight_decay: 5.0e-4
+  cv_folds: 5
+
+eval:
+  # for zero-shot image classification with the trained text encoder; written by hand, not taken from the NLP
+  class_prompts:
+    ischemic: "Subendocardial or transmural late gadolinium enhancement in a coronary territory, consistent with prior myocardial infarction."
+    non-ischemic: "Mid-wall, epicardial or patchy late gadolinium enhancement in a non-coronary distribution, consistent with non-ischemic cardiomyopathy."
+    mixed: "Both subendocardial infarct-pattern and mid-wall or epicardial non-ischemic late gadolinium enhancement."
+    no-scar: "No late gadolinium enhancement. No myocardial scar or fibrosis."
